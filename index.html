@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة شرارة روح</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #1a1a2e;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        .option-btn {
+            transition: all 0.2s ease-in-out;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .option-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #e94560;
+        }
+    </style>
+</head>
+<body class="text-gray-200 flex items-center justify-center min-h-screen p-4">
+
+    <div id="app" class="container mx-auto max-w-2xl w-full">
+
+        <!-- شاشة الإعداد -->
+        <div id="setup-view" class="glass-card p-6 sm:p-8 rounded-2xl shadow-xl fade-in">
+            <header class="text-center mb-6">
+                <h1 class="text-4xl font-bold text-white">شرارة روح</h1>
+                <p class="text-gray-400 mt-1">لعبة مواقف وتفاهم بينكم</p>
+            </header>
+
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label for="player1-name-input" class="block mb-2 text-lg font-semibold text-gray-100">اسمك</label>
+                    <input type="text" id="player1-name-input" placeholder="اكتب اسمك هنا" class="w-full p-3 border-2 bg-gray-800 border-gray-600 rounded-lg focus:border-pink-500 focus:ring-pink-500 transition text-white">
+                </div>
+                <div>
+                    <label for="player2-name-input" class="block mb-2 text-lg font-semibold text-gray-100">اسم شريكتك</label>
+                    <input type="text" id="player2-name-input" placeholder="اكتب اسمها هنا" class="w-full p-3 border-2 bg-gray-800 border-gray-600 rounded-lg focus:border-pink-500 focus:ring-pink-500 transition text-white">
+                </div>
+            </div>
+            
+            <div class="my-6 p-4 bg-gray-800 border border-gray-700 rounded-lg text-center">
+                <p class="font-bold text-yellow-400">⚠️ تنبيه هام</p>
+                <p class="text-sm text-gray-300 mt-2">اللعبة دي معمولة عشان تقربكوا من بعض وتستمتعوا. التحليلات اللي بتطلع هي مجرد تفسيرات إبداعية من الذكاء الاصطناعي ومش تقييم علمي.</p>
+            </div>
+
+            <button id="start-game-btn" class="w-full bg-pink-600 text-white font-black py-4 px-8 rounded-lg hover:bg-pink-700 transition shadow-lg text-2xl disabled:bg-gray-600 disabled:cursor-not-allowed" disabled>❤️ يلا نشوف هنتصرف إزاي</button>
+        </div>
+
+        <!-- شاشة اللعب (الأسئلة) -->
+        <div id="game-view" class="hidden glass-card p-6 sm:p-8 rounded-2xl shadow-xl fade-in">
+            <div class="flex justify-between items-center mb-4 text-gray-400 font-bold">
+                <div id="player-turn-name" class="text-2xl text-pink-400"></div>
+                <div id="question-counter" class="text-lg"></div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg mb-6 min-h-[120px] flex items-center justify-center">
+                <h2 id="question-text" class="text-2xl text-center font-semibold text-white"></h2>
+            </div>
+            <div id="options-container" class="grid grid-cols-1 gap-4">
+                <!-- Options will be injected here -->
+            </div>
+        </div>
+        
+        <!-- شاشة النتائج النهائية -->
+        <div id="results-view" class="hidden">
+            <header class="text-center mb-6 fade-in">
+                <h1 class="text-4xl font-bold text-white">تحليل علاقتكم</h1>
+                <p class="text-gray-400 mt-1">دي رؤية الذكاء الاصطناعي لقصتكوا</p>
+            </header>
+            <div id="results-container" class="glass-card p-6 rounded-2xl space-y-6">
+                <!-- Relationship analysis will be injected here -->
+            </div>
+            
+            <!-- AI Features Section -->
+            <div id="ai-features" class="mt-8 glass-card p-6 rounded-2xl fade-in">
+                 <h2 class="text-2xl font-bold text-center text-white mb-4">✨ لمسة من الذكاء الاصطناعي</h2>
+                 <div class="space-y-4">
+                    <button id="suggest-date-btn" class="w-full bg-purple-600 text-white font-bold py-3 px-5 rounded-lg hover:bg-purple-700 transition shadow">اقترح فكرة خروجة</button>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button id="compliment-p2-btn" class="w-full bg-teal-600 text-white font-bold py-3 px-5 rounded-lg hover:bg-teal-700 transition shadow"></button>
+                        <button id="compliment-p1-btn" class="w-full bg-teal-600 text-white font-bold py-3 px-5 rounded-lg hover:bg-teal-700 transition shadow"></button>
+                    </div>
+                 </div>
+            </div>
+
+            <button id="play-again-btn" class="w-full mt-8 bg-pink-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-pink-700 transition">نلعب تاني</button>
+        </div>
+
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="hidden fixed inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center p-4 z-50">
+        <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-24 w-24 mb-4 animate-spin"></div>
+        <h2 id="loading-text" class="text-center text-white text-xl font-semibold"></h2>
+    </div>
+
+    <!-- AI Suggestion Modal -->
+    <div id="ai-suggestion-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+        <div class="glass-card p-6 rounded-2xl shadow-xl max-w-lg w-full">
+            <h3 id="ai-modal-title" class="text-2xl font-bold mb-4 text-center text-white"></h3>
+            <div id="ai-modal-content" class="text-gray-300 text-lg leading-relaxed space-y-4 max-h-[60vh] overflow-y-auto p-2">
+                <!-- AI content will be injected here -->
+            </div>
+            <div class="flex justify-center mt-6">
+                <button id="close-ai-modal-btn" class="bg-gray-700 text-white font-bold py-2 px-8 rounded-lg hover:bg-gray-600">تمام</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- متغيرات الحالة ---
+            let gameState = {};
+            let QUESTIONS = []; // Will be populated by AI
+
+            // --- عناصر الواجهة ---
+            const views = { setup: document.getElementById('setup-view'), game: document.getElementById('game-view'), results: document.getElementById('results-view'), };
+            const player1NameInput = document.getElementById('player1-name-input');
+            const player2NameInput = document.getElementById('player2-name-input');
+            const startGameBtn = document.getElementById('start-game-btn');
+            const playerTurnName = document.getElementById('player-turn-name');
+            const questionCounter = document.getElementById('question-counter');
+            const questionText = document.getElementById('question-text');
+            const optionsContainer = document.getElementById('options-container');
+            const resultsContainer = document.getElementById('results-container');
+            const playAgainBtn = document.getElementById('play-again-btn');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            const suggestDateBtn = document.getElementById('suggest-date-btn');
+            const complimentP1Btn = document.getElementById('compliment-p1-btn');
+            const complimentP2Btn = document.getElementById('compliment-p2-btn');
+            const aiSuggestionModal = document.getElementById('ai-suggestion-modal');
+            const aiModalTitle = document.getElementById('ai-modal-title');
+            const aiModalContent = document.getElementById('ai-modal-content');
+            const closeAiModalBtn = document.getElementById('close-ai-modal-btn');
+
+            function showView(viewName) {
+                Object.values(views).forEach(view => view.classList.add('hidden'));
+                views[viewName].classList.remove('hidden');
+            }
+
+            function init() {
+                gameState = { players: [{}, {}], turnIndex: 0, relationshipAnalysis: '' };
+                showView('setup');
+            }
+
+            function validateSetup() {
+                const name1 = player1NameInput.value.trim();
+                const name2 = player2NameInput.value.trim();
+                startGameBtn.disabled = !(name1 && name2);
+            }
+
+            async function startGame() {
+                const name1 = player1NameInput.value.trim();
+                const name2 = player2NameInput.value.trim();
+                if (!name1 || !name2) return;
+
+                gameState.players[0] = { name: name1, answers: [] };
+                gameState.players[1] = { name: name2, answers: [] };
+
+                loadingText.textContent = "✨ بنحضر مواقف مخصوصة ليكوا...";
+                loadingOverlay.classList.remove('hidden');
+                
+                const success = await fetchAiQuestions();
+                if (!success) {
+                    alert("حصل مشكلة في تحضير المواقف، ممكن تتأكدوا من النت وتجربوا تاني.");
+                    loadingOverlay.classList.add('hidden');
+                    return;
+                }
+
+                loadingOverlay.classList.add('hidden');
+                gameState.turnIndex = 0;
+                displayQuestion();
+                showView('game');
+            }
+            
+            async function fetchAiQuestions() {
+                const prompt = `أنت مصمم ألعاب متخصص في العلاقات العاطفية. صمم لعبة اسمها "شرارة روح" بالعامية المصرية.\nاعمل 20 "موقف" جديد ومختلف، كل موقف له 4 اختيارات كرد فعل. المواقف دي هدفها إن أي اتنين مخطوبين أو مرتبطين يكتشفوا طريقة تفكير بعض في مواجهة تحديات أو مواقف حياتية مختلفة بطريقة ممتعة. نوع في المواقف بين حاجات بسيطة (زي اختيار فيلم) وحاجات أكبر (زي التخطيط لمستقبلكم).\n\nطلع النتيجة في صيغة JSON مظبوطة: array فيها 20 object، كل object فيه key اسمه "q" (نص الموقف) و key اسمه "o" (array فيها 4 اختيارات كردود أفعال).`;
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { questions: { type: "ARRAY", items: { type: "OBJECT", properties: { q: { type: "STRING" }, o: { type: "ARRAY", items: { type: "STRING" } } }, required: ["q", "o"] } } }, required: ["questions"] } }
+                };
+
+                try {
+                    const apiKey = ""; // Left empty
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) return false;
+                    const result = await response.json();
+                    const jsonText = result.candidates[0].content.parts[0].text;
+                    const parsedJson = JSON.parse(jsonText);
+                    if (parsedJson.questions && parsedJson.questions.length >= 20) {
+                        QUESTIONS = parsedJson.questions;
+                        return true;
+                    }
+                    return false;
+                } catch (error) {
+                    console.error("Error fetching AI questions:", error);
+                    return false;
+                }
+            }
+
+            function displayQuestion() {
+                const questionIndex = Math.floor(gameState.turnIndex / 2);
+                const question = QUESTIONS[questionIndex];
+                const currentPlayer = gameState.players[gameState.turnIndex % 2];
+                
+                playerTurnName.textContent = `دور ${currentPlayer.name}`;
+                questionCounter.textContent = `الموقف ${gameState.turnIndex + 1} / 20`;
+                questionText.textContent = question.q;
+
+                optionsContainer.innerHTML = '';
+                question.o.forEach(option => {
+                    const button = document.createElement('button');
+                    button.textContent = option;
+                    button.className = 'option-btn w-full text-lg font-semibold p-4 rounded-lg text-white';
+                    button.onclick = () => handleAnswer(option);
+                    optionsContainer.appendChild(button);
+                });
+            }
+
+            function handleAnswer(selectedOption) {
+                const questionIndex = Math.floor(gameState.turnIndex / 2);
+                const currentPlayer = gameState.players[gameState.turnIndex % 2];
+                
+                currentPlayer.answers.push({ question: QUESTIONS[questionIndex].q, answer: selectedOption });
+                moveToNext();
+            }
+            
+            function moveToNext() {
+                gameState.turnIndex++;
+                if (gameState.turnIndex >= 20) {
+                    analyzeRelationship();
+                } else {
+                    displayQuestion();
+                }
+            }
+
+            async function analyzeRelationship() {
+                loadingText.textContent = "الذكاء الاصطناعي بيحلل علاقتكم...";
+                loadingOverlay.classList.remove('hidden');
+                
+                const player1 = gameState.players[0];
+                const player2 = gameState.players[1];
+
+                const p1Answers = player1.answers.map(item => `الموقف: ${item.question}\nرد فعله: ${item.answer}`).join('\n\n');
+                const p2Answers = player2.answers.map(item => `الموقف: ${item.question}\nرد فعلها: ${item.answer}`).join('\n\n');
+
+                const prompt = `أنت مستشار علاقات عاطفية خبير وبتتكلم بالعامية المصرية. قدامك ردود أفعال اتنين مرتبطين، "${player1.name}" و "${player2.name}"، على مجموعة مواقف.\n\nردود أفعال ${player1.name}:\n${p1Answers}\n\nردود أفعال ${player2.name}:\n${p2Answers}\n\nبناءً على ردود أفعالهم دي، اكتب تحليل شامل ومفصل لعلاقتهم. التحليل لازم يكون بنّاء وإيجابي ويهدف لمساعدتهم يفهموا بعض أكتر. قسم التحليل للآتي:\n1. **نقاط القوة في علاقتكم:** (3 نقاط على الأقل) حاجات جميلة وواضحة في طريقة تعاملكم مع المواقف زي التفاهم، التكامل، أو الدعم.\n2. **نقاط ممكن تشتغلوا عليها:** (نقطتين أو ثلاثة) اختلافات بسيطة في ردود الأفعال ممكن تكون فرصة للتطور، وقدم نصيحة بسيطة وعملية لكل نقطة عشان تقووا علاقتهم أكتر.\n3. **ملخص علاقتكم:** فقرة أخيرة بتلخص طبيعة الرابط اللي بينكم بناءً على طريقة تصرفكم في المواقف دي بطريقة دافية ومُطمئنة.\n\nخلي كلامك ودود وواضح كأنك بتتكلم معاهم مباشرة.`;
+
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                
+                try {
+                    const apiKey = ""; // Left empty
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+
+                    let analysisText = "حصلت مشكلة في التحليل، ممكن تجربوا تاني.";
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
+                            analysisText = result.candidates[0].content.parts[0].text;
+                        }
+                    }
+                    gameState.relationshipAnalysis = analysisText;
+                    resultsContainer.innerHTML = analysisText.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong class="text-pink-400">$1</strong>');
+
+                } catch (error) {
+                    console.error("Error fetching analysis:", error);
+                    resultsContainer.textContent = "فشل الاتصال بالسيرفر. اتأكدوا من النت وجربوا تاني.";
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                    setupAiFeatures();
+                    showView('results');
+                }
+            }
+            
+            function setupAiFeatures() {
+                const player1Name = gameState.players[0].name;
+                const player2Name = gameState.players[1].name;
+                complimentP2Btn.textContent = `قول لـ ${player2Name} كلمة حلوة`;
+                complimentP1Btn.textContent = `قولي لـ ${player1Name} كلمة حلوة`;
+            }
+
+            async function generateDateIdea() {
+                loadingText.textContent = "بفكر في خروجة تليق بيكوا...";
+                loadingOverlay.classList.remove('hidden');
+
+                const prompt = `أنت خبير في تخطيط الخروجات الرومانسية وبتتكلم بالعامية المصرية. بناءً على تحليل العلاقة ده بين اتنين، اقترح فكرة خروجة مبتكرة ومخصوصة ليهم هما الاتنين. خلي الفكرة دمها خفيف ومناسبة لشخصياتهم. اشرح ليه الفكرة دي مناسبة ليهم.\n\nتحليل العلاقة:\n${gameState.relationshipAnalysis}`;
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+
+                try {
+                    const apiKey = ""; // Left empty
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    let suggestionText = "معرفتش أفكر في حاجة دلوقتي، جرب تاني.";
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
+                            suggestionText = result.candidates[0].content.parts[0].text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        }
+                    }
+                    aiModalTitle.textContent = "💡 فكرة خروجة";
+                    aiModalContent.innerHTML = suggestionText;
+                } catch (error) {
+                    aiModalContent.textContent = "فشل الاتصال بالسيرفر.";
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                    aiSuggestionModal.classList.remove('hidden');
+                }
+            }
+
+            async function generateCompliment(complimenter, receiver) {
+                loadingText.textContent = `بجهز أحلى كلام لـ ${receiver.name}...`;
+                loadingOverlay.classList.remove('hidden');
+                
+                const receiverAnswers = receiver.answers.map(item => `الموقف: ${item.question}\nرد فعلها: ${item.answer}`).join('\n\n');
+                const prompt = `أنت "${complimenter.name}" وعايز تقول كلمة حلوة لشريكتك "${receiver.name}". بناءً على ردود أفعالها في المواقف دي، اكتب مجاملة قصيرة وصادقة من القلب ليها بالعامية المصرية. خلي الكلام يعبر عن حاجة مميزة في شخصيتها عجبتك من طريقة تصرفها.\n\nإجابات ${receiver.name}:\n${receiverAnswers}`;
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+
+                try {
+                    const apiKey = ""; // Left empty
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    let complimentText = "الكلام الحلو مش عايز يطلع دلوقتي، جرب تاني.";
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
+                            complimentText = `"${result.candidates[0].content.parts[0].text.replace(/\n/g, '<br>')}"`;
+                        }
+                    }
+                    aiModalTitle.textContent = `💌 رسالة من ${complimenter.name}`;
+                    aiModalContent.innerHTML = complimentText;
+                } catch (error) {
+                    aiModalContent.textContent = "فشل الاتصال بالسيرفر.";
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                    aiSuggestionModal.classList.remove('hidden');
+                }
+            }
+
+            // --- Event Listeners ---
+            player1NameInput.addEventListener('input', validateSetup);
+            player2NameInput.addEventListener('input', validateSetup);
+            startGameBtn.addEventListener('click', startGame);
+            playAgainBtn.addEventListener('click', init);
+            suggestDateBtn.addEventListener('click', generateDateIdea);
+            complimentP2Btn.addEventListener('click', () => generateCompliment(gameState.players[0], gameState.players[1]));
+            complimentP1Btn.addEventListener('click', () => generateCompliment(gameState.players[1], gameState.players[0]));
+            closeAiModalBtn.addEventListener('click', () => aiSuggestionModal.classList.add('hidden'));
+
+            // --- Initial Load ---
+            init();
+        });
+    </script>
+
+</body>
+</html>
