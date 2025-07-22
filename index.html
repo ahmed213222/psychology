@@ -161,6 +161,7 @@
 
             function init() {
                 gameState = { players: [{}, {}], turnIndex: 0, relationshipAnalysis: '' };
+                loadNamesFromStorage();
                 showView('setup');
             }
 
@@ -168,6 +169,23 @@
                 const name1 = player1NameInput.value.trim();
                 const name2 = player2NameInput.value.trim();
                 startGameBtn.disabled = !(name1 && name2);
+            }
+            
+            function saveNamesToStorage() {
+                localStorage.setItem('soulSparkPlayer1', gameState.players[0].name);
+                localStorage.setItem('soulSparkPlayer2', gameState.players[1].name);
+            }
+
+            function loadNamesFromStorage() {
+                const savedPlayer1 = localStorage.getItem('soulSparkPlayer1');
+                const savedPlayer2 = localStorage.getItem('soulSparkPlayer2');
+                if (savedPlayer1) {
+                    player1NameInput.value = savedPlayer1;
+                }
+                if (savedPlayer2) {
+                    player2NameInput.value = savedPlayer2;
+                }
+                validateSetup();
             }
 
             async function startGame() {
@@ -177,6 +195,8 @@
 
                 gameState.players[0] = { name: name1, answers: [] };
                 gameState.players[1] = { name: name2, answers: [] };
+                
+                saveNamesToStorage();
 
                 loadingText.textContent = "✨ بنحضر مواقف مخصوصة ليكوا...";
                 loadingOverlay.classList.remove('hidden');
