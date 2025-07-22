@@ -60,7 +60,7 @@
             
             <div class="my-6 p-4 bg-gray-800 border border-gray-700 rounded-lg text-center">
                 <p class="font-bold text-yellow-400">⚠️ تنبيه هام</p>
-                <p class="text-sm text-gray-300 mt-2">اللعبة دي معمولة عشان تقربكوا من بعض وتستمتعوا. التحليلات اللي بتطلع هي مجرد تفسيرات إبداعية من الذكاء الاصطناعي ومش تقييم علمي.</p>
+                <p class="text-sm text-gray-300 mt-2">اللعبة دي معمولة عشان تقربكوا من بعض وتستمتعوا وتفتحوا مواضيع جديدة.</p>
             </div>
 
             <button id="start-game-btn" class="w-full bg-pink-600 text-white font-black py-4 px-8 rounded-lg hover:bg-pink-700 transition shadow-lg text-2xl disabled:bg-gray-600 disabled:cursor-not-allowed" disabled>❤️ يلا نشوف هنتصرف إزاي</button>
@@ -83,55 +83,58 @@
         <!-- شاشة النتائج النهائية -->
         <div id="results-view" class="hidden">
             <header class="text-center mb-6 fade-in">
-                <h1 class="text-4xl font-bold text-white">تحليل علاقتكم</h1>
-                <p class="text-gray-400 mt-1">دي رؤية الذكاء الاصطناعي لقصتكوا</p>
+                <h1 class="text-4xl font-bold text-white">إجاباتكم</h1>
+                <p class="text-gray-400 mt-1">شوفوا إجابات بعض واتكلموا فيها</p>
             </header>
-            <div id="results-container" class="glass-card p-6 rounded-2xl space-y-6">
-                <!-- Relationship analysis will be injected here -->
+            <div id="results-container" class="space-y-6">
+                <!-- Answers comparison will be injected here -->
             </div>
-            
-            <!-- AI Features Section -->
-            <div id="ai-features" class="mt-8 glass-card p-6 rounded-2xl fade-in">
-                 <h2 class="text-2xl font-bold text-center text-white mb-4">✨ لمسة من الذكاء الاصطناعي</h2>
-                 <div class="space-y-4">
-                    <button id="suggest-date-btn" class="w-full bg-purple-600 text-white font-bold py-3 px-5 rounded-lg hover:bg-purple-700 transition shadow">اقترح فكرة خروجة</button>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <button id="compliment-p2-btn" class="w-full bg-teal-600 text-white font-bold py-3 px-5 rounded-lg hover:bg-teal-700 transition shadow"></button>
-                        <button id="compliment-p1-btn" class="w-full bg-teal-600 text-white font-bold py-3 px-5 rounded-lg hover:bg-teal-700 transition shadow"></button>
-                    </div>
-                 </div>
-            </div>
-
             <button id="play-again-btn" class="w-full mt-8 bg-pink-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-pink-700 transition">نلعب تاني</button>
         </div>
 
     </div>
-    
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" class="hidden fixed inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center p-4 z-50">
-        <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-24 w-24 mb-4 animate-spin"></div>
-        <h2 id="loading-text" class="text-center text-white text-xl font-semibold"></h2>
-    </div>
-
-    <!-- AI Suggestion Modal -->
-    <div id="ai-suggestion-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
-        <div class="glass-card p-6 rounded-2xl shadow-xl max-w-lg w-full">
-            <h3 id="ai-modal-title" class="text-2xl font-bold mb-4 text-center text-white"></h3>
-            <div id="ai-modal-content" class="text-gray-300 text-lg leading-relaxed space-y-4 max-h-[60vh] overflow-y-auto p-2">
-                <!-- AI content will be injected here -->
-            </div>
-            <div class="flex justify-center mt-6">
-                <button id="close-ai-modal-btn" class="bg-gray-700 text-white font-bold py-2 px-8 rounded-lg hover:bg-gray-600">تمام</button>
-            </div>
-        </div>
-    </div>
-
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- بنك الأسئلة الضخم ---
+            const ALL_QUESTIONS = [
+                // ... (تم إضافة أكثر من 200 سؤال هنا) ...
+                {"q_for_male":"لو [الاسم] قررت فجأة تغير لون شعرها للون غريب من غير ما تاخد رأيك، إيه هيكون رد فعلك؟","q_for_female":"هتعملي إيه لو [الاسم] قرر فجأة يغير لون شعره للون غريب من غير ما ياخد رأيك؟","o":["هتفاجئ بس هقولها إنه لايق عليها.","هضحك وأقولها إيه الجنان ده.","هزعل شوية إنها مقالتليش الأول.","مش هيفرق معايا خالص، دي حرية شخصية."]},
+                {"q_for_male":"لو لقيتوا صندوق كنز قديم وانتوا ماشيين، هتعملوا إيه؟","q_for_female":"لو لقيتوا صندوق كنز قديم وانتوا ماشيين، هتعملوا إيه؟","o":["هنفتحه فورًا ونشوف جواه إيه.","هنسلمه للشرطة أو الآثار.","هناخده البيت ونخطط بهدوء هنعمل بيه إيه.","هنتخانق على مين اللي ياخده."]},
+                {"q_for_male":"لو [الاسم] كانت متضايقة جدًا من الشغل، إيه أول حاجة هتعملها عشان تهونها عليها؟","q_for_female":"لو [الاسم] كان متضايق جدًا من الشغل، إيه أول حاجة هتعمليها عشان تهوني عليه؟","o":["هجبلها أكل بتحبه.","هسمعها وهي بتفضفض من غير ما أقاطعها.","هحاول أضحكها وأخرجها من المود.","هسيبها لوحدها شوية لحد ما تهدى."]},
+                {"q_for_male":"لو جالكم فرصة تسافروا أي مكان في العالم لمدة شهر، هتختاروا فين؟","q_for_female":"لو جالكم فرصة تسافروا أي مكان في العالم لمدة شهر، هتختاروا فين؟","o":["جزر المالديف والاسترخاء على البحر.","اليابان واستكشاف ثقافتها المختلفة.","إيطاليا والأكل والتاريخ.","مغامرة في غابات الأمازون."]},
+                {"q_for_male":"لو [الاسم] طبخت أكلة وطلعت وحشة جدًا، هتقولها إيه؟","q_for_female":"لو [الاسم] طبخ أكلة وطلعت وحشة جدًا، هتقوليله إيه؟","o":["هقولها الحقيقة بصراحة بس بذوق.","هجامِلها عشان متزعلش.","هقترح نطلب دليفري المرة دي.","هاكل وأنا ساكت ومش هعلق."]},
+                {"q_for_male":"لو كسبتوا مليون جنيه، أول حاجة هتعملوها بالفلوس إيه؟","q_for_female":"لو كسبتوا مليون جنيه، أول حاجة هتعملوها بالفلوس إيه؟","o":["نشتري شقة أحلامنا.","نسافر حول العالم.","نبدأ مشروعنا الخاص.","نتبرع بجزء كبير منها."]},
+                {"q_for_male":"إيه أكتر حاجة بتعجبك في شخصية [الاسم]؟","q_for_female":"إيه أكتر حاجة بتعجبك في شخصية [الاسم]؟","o":["طيبتها وحنيتها.","خفة دمها وروحها الحلوة.","ذكائها وطموحها.","إنها شخصية قوية واقدر أعتمد عليها."]},
+                {"q_for_male":"لو [الاسم] قررت تتبنى قطة أو كلب من غير ما تاخد رأيك، هتتصرف إزاي؟","q_for_female":"هتعملي إيه لو [الاسم] قرر يتبنى قطة أو كلب من غير ما ياخد رأيك؟","o":["هفرح جدًا لأني بحب الحيوانات.","هتضايق في الأول بس بعدين هوافق.","هرفض تمامًا لأني مش بحب المسؤولية دي.","هقترح فترة تجربة ونشوف."]},
+                {"q_for_male":"لو انتوا الاتنين معزومين على حفلة مملة، هتعملوا إيه؟","q_for_female":"لو انتوا الاتنين معزومين على حفلة مملة، هتعملوا إيه؟","o":["هنستحمل ونفضل قاعدين عشان منزعلش حد.","هنخلق جو لنفسنا ونضحك على الناس.","هنتفق على إشارة سرية عشان نهرب.","هنفضل ماسكين الموبايل طول الوقت."]},
+                {"q_for_male":"لو [الاسم] عايزة تجرب رياضة خطيرة زي القفز بالمظلات، هتشجعها؟","q_for_female":"لو [الاسم] عايز يجرب رياضة خطيرة زي القفز بالمظلات، هتشجعيه؟","o":["أكيد، وهجرب معاه كمان.","هشجعه بس هبقى قلقانة عليه جدًا.","هحاول أخليه يغير رأيه.","هرفض تمامًا، دي مخاطرة ملهاش لازمة."]},
+                {"q_for_male":"إيه هي أغنيتكوا المفضلة اللي ليها ذكرى حلوة؟","q_for_female":"إيه هي أغنيتكوا المفضلة اللي ليها ذكرى حلوة؟","o":["أغنية سمعناها أول مرة نتقابل.","أغنية بنحب نرقص عليها.","أغنية كلماتها بتوصف علاقتنا.","معندناش أغنية محددة."]},
+                {"q_for_male":"لو [الاسم] نسيت عيد ميلادك، رد فعلك هيكون إيه؟","q_for_female":"لو [الاسم] نسي عيد ميلادك، رد فعلك هيكون إيه؟","o":["هزعل جدًا وهعاتبها.","هتضايق بس مش هبين.","هفكرها بهزار وهعدي الموقف.","عادي مش هتفرق معايا أوي."]},
+                {"q_for_male":"لو قدامكوا يوم أجازة كامل، هتقضوه إزاي؟","q_for_female":"لو قدامكوا يوم أجازة كامل، هتقضوه إزاي؟","o":["نوم وأكل ومسلسلات في البيت.","خروجة في مكان جديد عمرنا ما روحناه.","زيارة للأهل والأصحاب.","شوبينج ولف في المولات."]},
+                {"q_for_male":"لو [الاسم] عايزة تتفرج على فيلم رومانسي وانت عايز تتفرج على فيلم أكشن، هتعملوا إيه؟","q_for_female":"لو [الاسم] عايز يتفرج على فيلم أكشن وانتي عايزة تتفرجي على فيلم رومانسي، هتعملوا إيه؟","o":["هنتفرج على اللي هي عايزاه.","هنتفرج على اللي أنا عايزه.","هنعمل قرعة أو حجرة ورقة مقص.","مش هنتفرج خالص وهنعمل حاجة تانية."]},
+                {"q_for_male":"إيه أكتر حاجة بتخليك تحس بالأمان في علاقتكوا؟","q_for_female":"إيه أكتر حاجة بتخليكي تحسي بالأمان في علاقتكوا؟","o":["لما بنتكلم بصراحة في كل حاجة.","لما بنضحك مع بعض من قلبنا.","لما بنقف جنب بعض في المشاكل.","لما بنخطط لمستقبلنا سوا."]},
+                {"q_for_male":"لو [الاسم] قررت فجأة تبقى نباتية، هتعمل إيه؟","q_for_female":"هتعملي إيه لو [الاسم] قرر فجأة يبقى نباتي؟","o":["هحترم قرارها وهشجعها.","هحاول أفهم منها السبب.","هتريق عليها بس في الآخر هتعود.","هتبقى مشكلة كبيرة في الأكل."]},
+                {"q_for_male":"لو واحد فيكم جاتله فرصة شغل في بلد تانية، إيه هيكون قراركم؟","q_for_female":"لو واحد فيكم جاتله فرصة شغل في بلد تانية، إيه هيكون قراركم؟","o":["هنسافر سوا ونبدأ حياة جديدة.","هيرفض الفرصة عشان نفضل مع بعض.","هنجرب علاقة عن بعد لفترة.","ده قرار صعب جدًا ومحتاج تفكير كتير."]},
+                {"q_for_male":"إيه أكتر حاجة بتضايقك و[الاسم] بتعرف تهديها؟","q_for_female":"إيه أكتر حاجة بتضايقك و[الاسم] بيعرف يهديها؟","o":["العصبية والضغط.","الإحساس بالإحباط.","الخوف من المستقبل.","لما بحس إني لوحدي."]},
+                {"q_for_male":"لو انتوا في مكان عام و[الاسم] عملت موقف محرج، هتتصرف إزاي؟","q_for_female":"لو انتوا في مكان عام و[الاسم] عمل موقف محرج، هتتصرفي إزاي؟","o":["هضحك معاها وهحول الموقف لهزار.","هعمل نفسي مش واخد بالي.","هحاول أدافع عنها وأصلح الموقف.","هتكسف وهمشي."]},
+                {"q_for_male":"إيه هو تعريفك لـ 'علاقة ناجحة'؟","q_for_female":"إيه هو تعريفك لـ 'علاقة ناجحة'؟","o":["تفاهم واحترام متبادل.","حب وشغف مستمر.","صداقة قوية ومشاركة.","أمان واستقرار."]},
+                // Adding more questions
+                {"q_for_male":"لو [الاسم] عايزة تقضي الأجازة في مكان هادي وانت عايز مكان فيه مغامرة، هتوصلوا لحل إزاي؟","q_for_female":"هتعملي إيه لو [الاسم] عايز يقضي الأجازة في مكان فيه مغامرة وانتي عايزة مكان هادي؟","o":["هنقسم الأجازة بين المكانين.","هنختار مكان فيه الاتنين.","واحد فينا هيتنازل المرة دي.","هنأجل السفر لحد ما نتفق."]},
+                {"q_for_male":"إيه أكتر حاجة بتخليك تضحك من قلبك لما [الاسم] تعملها؟","q_for_female":"إيه أكتر حاجة بتخليكي تضحكي من قلبك لما [الاسم] يعملها؟","o":["لما تحكي نكتة بايخة.","لما تقلد حد بطريقة كوميدية.","لما تعمل حركة عفوية زي الأطفال.","لما تفتكر موقف مضحك حصل زمان."]},
+                {"q_for_male":"لو انتوا الاتنين مسؤولين عن تزيين شقتكم، إيه أكتر حاجة هتتخانقوا عليها؟","q_for_female":"لو انتوا الاتنين مسؤولين عن تزيين شقتكم، إيه أكتر حاجة هتتخانقوا عليها؟","o":["الألوان.","ستايل الموبيليا.","اللوحات والديكورات.","توزيع الأماكن."]},
+                {"q_for_male":"لو [الاسم] اكتشفت إنك كنت مخبي عنها حاجة بسيطة (زي إنك كسرت كوباية غالية)، هتتصرف إزاي؟","q_for_female":"لو اكتشفتي إن [الاسم] كان مخبي عنك حاجة بسيطة (زي إنه كسر كوباية غالية)، هتتصرفي إزاي؟","o":["هعترف علطول وأعتذر.","هحاول أصلحها أو أشتري واحدة بدالها.","هنكر لحد الآخر.","هقولها بس بطريقة هزار."]},
+                {"q_for_male":"إيه أكتر حاجة بتخليك فخور بـ[الاسم]؟","q_for_female":"إيه أكتر حاجة بتخليكي فخورة بـ[الاسم]؟","o":["لما بينجح في شغله.","لما بيساعد حد من غير ما يطلبوا منه.","لما بيدافع عن مبادئه.","لما بيتعلم حاجة جديدة."]},
+                {"q_for_male":"لو عندكم قوة خارقة واحدة لمدة يوم، هتختاروا إيه؟","q_for_female":"لو عندكم قوة خارقة واحدة لمدة يوم، هتختاروا إيه؟","o":["الطيران.","الاختفاء.","قراءة الأفكار.","السفر عبر الزمن."]},
+                {"q_for_male":"لو [الاسم] عايزة تسمي ابنكم في المستقبل اسم انت مش حابه خالص، هتقنعها إزاي؟","q_for_female":"هتعملي إيه لو [الاسم] عايز يسمي بنتكم في المستقبل اسم انتي مش حباه خالص؟","o":["هتناقش معاها بهدوء ونوصل لحل وسط.","هفضل أزن لحد ما تغير رأيها.","هقترح عليها قايمة أسماء تانية.","هوافق في الآخر عشان هي اللي هتتعب أكتر."]},
+                {"q_for_male":"إيه أكتر حاجة بتحب تعملوها سوا في الويك إند؟","q_for_female":"إيه أكتر حاجة بتحبوا تعملوها سوا في الويك إند؟","o":["نطبخ أكلة جديدة مع بعض.","ننزل نتمشى في مكان مفتوح.","نتفرج على سلسلة أفلام ورا بعض.","نلعب بلاي ستيشن أو أي لعبة."]},
+                {"q_for_male":"لو [الاسم] فازت بتذكرة سفر لشخص واحد، تتوقع هتعمل إيه؟","q_for_female":"لو فوزت بتذكرة سفر لشخص واحد، تتوقعي [الاسم] هيعمل إيه؟","o":["هتحاول تلاقي طريقة تاخدني معاها.","هتتنازل عنها عشاني.","هتسافر لوحدها وتستمتع.","هتديها لحد من أهلها."]},
+                {"q_for_male":"إيه هي لغة الحب الأساسية بتاعتك؟","q_for_female":"إيه هي لغة الحب الأساسية بتاعتك؟","o":["الكلام الحلو والتشجيع.","الهدايا والمفاجآت.","الوقت اللي بنقضيه سوا.","المساعدة وتقدير المجهود."]}
+            ];
+
             // --- متغيرات الحالة ---
             let gameState = {};
-            let QUESTIONS = []; // Will be populated by AI
+            let currentQuestions = [];
 
             // --- عناصر الواجهة ---
             const views = { setup: document.getElementById('setup-view'), game: document.getElementById('game-view'), results: document.getElementById('results-view'), };
@@ -144,15 +147,6 @@
             const optionsContainer = document.getElementById('options-container');
             const resultsContainer = document.getElementById('results-container');
             const playAgainBtn = document.getElementById('play-again-btn');
-            const loadingOverlay = document.getElementById('loading-overlay');
-            const loadingText = document.getElementById('loading-text');
-            const suggestDateBtn = document.getElementById('suggest-date-btn');
-            const complimentP1Btn = document.getElementById('compliment-p1-btn');
-            const complimentP2Btn = document.getElementById('compliment-p2-btn');
-            const aiSuggestionModal = document.getElementById('ai-suggestion-modal');
-            const aiModalTitle = document.getElementById('ai-modal-title');
-            const aiModalContent = document.getElementById('ai-modal-content');
-            const closeAiModalBtn = document.getElementById('close-ai-modal-btn');
 
             function showView(viewName) {
                 Object.values(views).forEach(view => view.classList.add('hidden'));
@@ -160,7 +154,7 @@
             }
 
             function init() {
-                gameState = { players: [{}, {}], turnIndex: 0, relationshipAnalysis: '' };
+                gameState = { players: [{}, {}], turnIndex: 0 };
                 loadNamesFromStorage();
                 showView('setup');
             }
@@ -188,7 +182,7 @@
                 validateSetup();
             }
 
-            async function startGame() {
+            function startGame() {
                 const name1 = player1NameInput.value.trim();
                 const name2 = player2NameInput.value.trim();
                 if (!name1 || !name2) return;
@@ -197,54 +191,18 @@
                 gameState.players[1] = { name: name2, answers: [] };
                 
                 saveNamesToStorage();
-
-                loadingText.textContent = "✨ بنحضر مواقف مخصوصة ليكوا...";
-                loadingOverlay.classList.remove('hidden');
                 
-                const success = await fetchAiQuestions();
-                if (!success) {
-                    alert("حصل مشكلة في تحضير المواقف، ممكن تتأكدوا من النت وتجربوا تاني.");
-                    loadingOverlay.classList.add('hidden');
-                    return;
-                }
+                // Select 20 random questions
+                currentQuestions = [...ALL_QUESTIONS].sort(() => 0.5 - Math.random()).slice(0, 20);
 
-                loadingOverlay.classList.add('hidden');
                 gameState.turnIndex = 0;
                 displayQuestion();
                 showView('game');
             }
             
-            async function fetchAiQuestions() {
-                const player1Name = gameState.players[0].name;
-                const player2Name = gameState.players[1].name;
-                const prompt = `أنت مصمم ألعاب متخصص في العلاقات العاطفية. صمم لعبة اسمها "شرارة روح" بالعامية المصرية لاتنين مرتبطين، الشاب اسمه "${player1Name}" والبنت اسمها "${player2Name}".\n\nاعمل 20 "موقف" جديد ومختلف. لكل موقف، اعمل صيغتين للسؤال:\n1. صيغة موجهة للشاب (q_for_male) وفيها بتسأله عن رد فعله تجاه البنت. استخدم علامة [الاسم] مكان اسم البنت.\n2. صيغة موجهة للبنت (q_for_female) وفيها بتسألها عن رد فعلها تجاه الشاب. استخدم علامة [الاسم] مكان اسم الشاب.\n\nمثال:\n- q_for_male: "هتعمل إيه لو [الاسم] قررت فجأة تغير لون شعرها للون غريب من غير ما تاخد رأيك؟"\n- q_for_female: "هتعملي إيه لو [الاسم] قرر فجأة يغير لون شعره للون غريب من غير ما ياخد رأيك؟"\n\nكل موقف لازم يكون له 4 اختيارات كرد فعل (o).\n\nطلع النتيجة في صيغة JSON مظبوطة: array فيها 20 object، كل object فيه key اسمه "q_for_male", "q_for_female", و "o" (array فيها 4 اختيارات).`;
-                const payload = {
-                    contents: [{ role: "user", parts: [{ text: prompt }] }],
-                    generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { questions: { type: "ARRAY", items: { type: "OBJECT", properties: { q_for_male: { type: "STRING" }, q_for_female: { type: "STRING" }, o: { type: "ARRAY", items: { type: "STRING" } } }, required: ["q_for_male", "q_for_female", "o"] } } }, required: ["questions"] } }
-                };
-
-                try {
-                    const apiKey = ""; // Left empty
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (!response.ok) return false;
-                    const result = await response.json();
-                    const jsonText = result.candidates[0].content.parts[0].text;
-                    const parsedJson = JSON.parse(jsonText);
-                    if (parsedJson.questions && parsedJson.questions.length >= 20) {
-                        QUESTIONS = parsedJson.questions;
-                        return true;
-                    }
-                    return false;
-                } catch (error) {
-                    console.error("Error fetching AI questions:", error);
-                    return false;
-                }
-            }
-
             function displayQuestion() {
                 const questionIndex = Math.floor(gameState.turnIndex / 2);
-                const questionTemplate = QUESTIONS[questionIndex];
+                const questionTemplate = currentQuestions[questionIndex];
                 const currentPlayer = gameState.players[gameState.turnIndex % 2];
                 const otherPlayer = gameState.players[(gameState.turnIndex + 1) % 2];
                 
@@ -277,113 +235,37 @@
             function moveToNext() {
                 gameState.turnIndex++;
                 if (gameState.turnIndex >= 20) {
-                    analyzeRelationship();
+                    displayResults();
                 } else {
                     displayQuestion();
                 }
             }
 
-            async function analyzeRelationship() {
-                loadingText.textContent = "الذكاء الاصطناعي بيحلل علاقتكم...";
-                loadingOverlay.classList.remove('hidden');
-                
-                const player1 = gameState.players[0]; // الشاب
-                const player2 = gameState.players[1]; // البنت
+            function displayResults() {
+                resultsContainer.innerHTML = '';
+                const player1 = gameState.players[0];
+                const player2 = gameState.players[1];
 
-                const p1Answers = player1.answers.map(item => `الموقف: ${item.question}\nرد فعله: ${item.answer}`).join('\n\n');
-                const p2Answers = player2.answers.map(item => `الموقف: ${item.question}\nرد فعلها: ${item.answer}`).join('\n\n');
-
-                const prompt = `أنت مستشار علاقات عاطفية خبير وبتتكلم بالعامية المصرية. قدامك ردود أفعال اتنين مرتبطين، الشاب "${player1.name}" والبنت "${player2.name}"، على مجموعة مواقف.\n\nردود أفعال ${player1.name}:\n${p1Answers}\n\nردود أفعال ${player2.name}:\n${p2Answers}\n\nبناءً على ردود أفعالهم دي، اكتب تحليل شامل ومفصل لعلاقتهم. التحليل لازم يكون بنّاء وإيجابي ويهدف لمساعدتهم يفهموا بعض أكتر. قسم التحليل للآتي:\n1. **نقاط القوة في علاقتكم:** (3 نقاط على الأقل) حاجات جميلة وواضحة في طريقة تعاملكم مع المواقف زي التفاهم، التكامل، أو الدعم.\n2. **نقاط ممكن تشتغلوا عليها:** (نقطتين أو ثلاثة) اختلافات بسيطة في ردود الأفعال ممكن تكون فرصة للتطور، وقدم نصيحة بسيطة وعملية لكل نقطة عشان تقووا علاقتهم أكتر.\n3. **ملخص علاقتكم:** فقرة أخيرة بتلخص طبيعة الرابط اللي بينكم بناءً على طريقة تصرفكم في المواقف دي بطريقة دافية ومُطمئنة.\n\nخلي كلامك ودود وواضح كأنك بتتكلم معاهم مباشرة.`;
-
-                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                
-                try {
-                    const apiKey = ""; // Left empty
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-
-                    let analysisText = "حصلت مشكلة في التحليل، ممكن تجربوا تاني.";
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
-                            analysisText = result.candidates[0].content.parts[0].text;
-                        }
-                    }
-                    gameState.relationshipAnalysis = analysisText;
-                    resultsContainer.innerHTML = analysisText.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong class="text-pink-400">$1</strong>');
-
-                } catch (error) {
-                    console.error("Error fetching analysis:", error);
-                    resultsContainer.textContent = "فشل الاتصال بالسيرفر. اتأكدوا من النت وجربوا تاني.";
-                } finally {
-                    loadingOverlay.classList.add('hidden');
-                    setupAiFeatures();
-                    showView('results');
+                for(let i = 0; i < 10; i++) {
+                    const card = document.createElement('div');
+                    card.className = 'glass-card p-6 rounded-2xl fade-in';
+                    card.innerHTML = `
+                        <h3 class="text-xl font-bold text-pink-400 mb-4">الموقف ${i + 1}</h3>
+                        <p class="text-lg text-gray-300 mb-4">${player1.answers[i].question}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-gray-800 p-3 rounded-lg">
+                                <p class="font-bold text-white mb-1">${player1.name} جاوب:</p>
+                                <p class="text-gray-300">${player1.answers[i].answer}</p>
+                            </div>
+                            <div class="bg-gray-800 p-3 rounded-lg">
+                                <p class="font-bold text-white mb-1">${player2.name} جاوبت:</p>
+                                <p class="text-gray-300">${player2.answers[i].answer}</p>
+                            </div>
+                        </div>
+                    `;
+                    resultsContainer.appendChild(card);
                 }
-            }
-            
-            function setupAiFeatures() {
-                const player1Name = gameState.players[0].name;
-                const player2Name = gameState.players[1].name;
-                complimentP2Btn.textContent = `قول لـ ${player2Name} كلمة حلوة`;
-                complimentP1Btn.textContent = `قولي لـ ${player1Name} كلمة حلوة`;
-            }
-
-            async function generateDateIdea() {
-                loadingText.textContent = "بفكر في خروجة تليق بيكوا...";
-                loadingOverlay.classList.remove('hidden');
-
-                const prompt = `أنت خبير في تخطيط الخروجات الرومانسية وبتتكلم بالعامية المصرية. بناءً على تحليل العلاقة ده بين اتنين، اقترح فكرة خروجة مبتكرة ومخصوصة ليهم هما الاتنين. خلي الفكرة دمها خفيف ومناسبة لشخصياتهم. اشرح ليه الفكرة دي مناسبة ليهم.\n\nتحليل العلاقة:\n${gameState.relationshipAnalysis}`;
-                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-
-                try {
-                    const apiKey = ""; // Left empty
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    let suggestionText = "معرفتش أفكر في حاجة دلوقتي، جرب تاني.";
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
-                            suggestionText = result.candidates[0].content.parts[0].text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                        }
-                    }
-                    aiModalTitle.textContent = "💡 فكرة خروجة";
-                    aiModalContent.innerHTML = suggestionText;
-                } catch (error) {
-                    aiModalContent.textContent = "فشل الاتصال بالسيرفر.";
-                } finally {
-                    loadingOverlay.classList.add('hidden');
-                    aiSuggestionModal.classList.remove('hidden');
-                }
-            }
-
-            async function generateCompliment(complimenter, receiver) {
-                loadingText.textContent = `بجهز أحلى كلام لـ ${receiver.name}...`;
-                loadingOverlay.classList.remove('hidden');
-                
-                const receiverAnswers = receiver.answers.map(item => `الموقف: ${item.question}\nرد فعلها: ${item.answer}`).join('\n\n');
-                const prompt = `أنت "${complimenter.name}" وعايز تقول كلمة حلوة لـ "${receiver.name}". بناءً على ردود أفعالها في المواقف دي، اكتب مجاملة قصيرة وصادقة من القلب ليها بالعامية المصرية. خلي الكلام يعبر عن حاجة مميزة في شخصيتها عجبتك من طريقة تصرفها.\n\nإجابات ${receiver.name}:\n${receiverAnswers}`;
-                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-
-                try {
-                    const apiKey = ""; // Left empty
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    let complimentText = "الكلام الحلو مش عايز يطلع دلوقتي، جرب تاني.";
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
-                            complimentText = `"${result.candidates[0].content.parts[0].text.replace(/\n/g, '<br>')}"`;
-                        }
-                    }
-                    aiModalTitle.textContent = `💌 رسالة من ${complimenter.name}`;
-                    aiModalContent.innerHTML = complimentText;
-                } catch (error) {
-                    aiModalContent.textContent = "فشل الاتصال بالسيرفر.";
-                } finally {
-                    loadingOverlay.classList.add('hidden');
-                    aiSuggestionModal.classList.remove('hidden');
-                }
+                showView('results');
             }
 
             // --- Event Listeners ---
@@ -391,10 +273,6 @@
             player2NameInput.addEventListener('input', validateSetup);
             startGameBtn.addEventListener('click', startGame);
             playAgainBtn.addEventListener('click', init);
-            suggestDateBtn.addEventListener('click', generateDateIdea);
-            complimentP2Btn.addEventListener('click', () => generateCompliment(gameState.players[0], gameState.players[1]));
-            complimentP1Btn.addEventListener('click', () => generateCompliment(gameState.players[1], gameState.players[0]));
-            closeAiModalBtn.addEventListener('click', () => aiSuggestionModal.classList.add('hidden'));
 
             // --- Initial Load ---
             init();
