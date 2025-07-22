@@ -49,12 +49,12 @@
 
             <div class="space-y-4 mb-6">
                 <div>
-                    <label for="player1-name-input" class="block mb-2 text-lg font-semibold text-gray-100">اسمك</label>
-                    <input type="text" id="player1-name-input" placeholder="اكتب اسمك هنا" class="w-full p-3 border-2 bg-gray-800 border-gray-600 rounded-lg focus:border-pink-500 focus:ring-pink-500 transition text-white">
+                    <label for="player1-name-input" class="block mb-2 text-lg font-semibold text-gray-100">اسم الشاب</label>
+                    <input type="text" id="player1-name-input" placeholder="اكتب الاسم هنا" class="w-full p-3 border-2 bg-gray-800 border-gray-600 rounded-lg focus:border-pink-500 focus:ring-pink-500 transition text-white">
                 </div>
                 <div>
-                    <label for="player2-name-input" class="block mb-2 text-lg font-semibold text-gray-100">اسم شريكتك</label>
-                    <input type="text" id="player2-name-input" placeholder="اكتب اسمها هنا" class="w-full p-3 border-2 bg-gray-800 border-gray-600 rounded-lg focus:border-pink-500 focus:ring-pink-500 transition text-white">
+                    <label for="player2-name-input" class="block mb-2 text-lg font-semibold text-gray-100">اسم البنت</label>
+                    <input type="text" id="player2-name-input" placeholder="اكتب الاسم هنا" class="w-full p-3 border-2 bg-gray-800 border-gray-600 rounded-lg focus:border-pink-500 focus:ring-pink-500 transition text-white">
                 </div>
             </div>
             
@@ -195,10 +195,12 @@
             }
             
             async function fetchAiQuestions() {
-                const prompt = `أنت مصمم ألعاب متخصص في العلاقات العاطفية. صمم لعبة اسمها "شرارة روح" بالعامية المصرية.\nاعمل 20 "موقف" جديد ومختلف، كل موقف له 4 اختيارات كرد فعل. المواقف دي هدفها إن أي اتنين مخطوبين أو مرتبطين يكتشفوا طريقة تفكير بعض في مواجهة تحديات أو مواقف حياتية مختلفة بطريقة ممتعة. نوع في المواقف بين حاجات بسيطة (زي اختيار فيلم) وحاجات أكبر (زي التخطيط لمستقبلكم).\n\nطلع النتيجة في صيغة JSON مظبوطة: array فيها 20 object، كل object فيه key اسمه "q" (نص الموقف) و key اسمه "o" (array فيها 4 اختيارات كردود أفعال).`;
+                const player1Name = gameState.players[0].name;
+                const player2Name = gameState.players[1].name;
+                const prompt = `أنت مصمم ألعاب متخصص في العلاقات العاطفية. صمم لعبة اسمها "شرارة روح" بالعامية المصرية لاتنين مرتبطين، الشاب اسمه "${player1Name}" والبنت اسمها "${player2Name}".\n\nاعمل 20 "موقف" جديد ومختلف. لكل موقف، اعمل صيغتين للسؤال:\n1. صيغة موجهة للشاب (q_for_male) وفيها بتسأله عن رد فعله تجاه البنت. استخدم علامة [الاسم] مكان اسم البنت.\n2. صيغة موجهة للبنت (q_for_female) وفيها بتسألها عن رد فعلها تجاه الشاب. استخدم علامة [الاسم] مكان اسم الشاب.\n\nمثال:\n- q_for_male: "هتعمل إيه لو [الاسم] قررت فجأة تغير لون شعرها للون غريب من غير ما تاخد رأيك؟"\n- q_for_female: "هتعملي إيه لو [الاسم] قرر فجأة يغير لون شعره للون غريب من غير ما ياخد رأيك؟"\n\nكل موقف لازم يكون له 4 اختيارات كرد فعل (o).\n\nطلع النتيجة في صيغة JSON مظبوطة: array فيها 20 object، كل object فيه key اسمه "q_for_male", "q_for_female", و "o" (array فيها 4 اختيارات).`;
                 const payload = {
                     contents: [{ role: "user", parts: [{ text: prompt }] }],
-                    generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { questions: { type: "ARRAY", items: { type: "OBJECT", properties: { q: { type: "STRING" }, o: { type: "ARRAY", items: { type: "STRING" } } }, required: ["q", "o"] } } }, required: ["questions"] } }
+                    generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { questions: { type: "ARRAY", items: { type: "OBJECT", properties: { q_for_male: { type: "STRING" }, q_for_female: { type: "STRING" }, o: { type: "ARRAY", items: { type: "STRING" } } }, required: ["q_for_male", "q_for_female", "o"] } } }, required: ["questions"] } }
                 };
 
                 try {
@@ -222,15 +224,20 @@
 
             function displayQuestion() {
                 const questionIndex = Math.floor(gameState.turnIndex / 2);
-                const question = QUESTIONS[questionIndex];
+                const questionTemplate = QUESTIONS[questionIndex];
                 const currentPlayer = gameState.players[gameState.turnIndex % 2];
+                const otherPlayer = gameState.players[(gameState.turnIndex + 1) % 2];
                 
+                const isMaleTurn = (gameState.turnIndex % 2) === 0;
+                const questionTextTemplate = isMaleTurn ? questionTemplate.q_for_male : questionTemplate.q_for_female;
+                const personalizedQuestion = questionTextTemplate.replace(/\[الاسم\]/g, otherPlayer.name);
+
                 playerTurnName.textContent = `دور ${currentPlayer.name}`;
                 questionCounter.textContent = `الموقف ${gameState.turnIndex + 1} / 20`;
-                questionText.textContent = question.q;
+                questionText.textContent = personalizedQuestion;
 
                 optionsContainer.innerHTML = '';
-                question.o.forEach(option => {
+                questionTemplate.o.forEach(option => {
                     const button = document.createElement('button');
                     button.textContent = option;
                     button.className = 'option-btn w-full text-lg font-semibold p-4 rounded-lg text-white';
@@ -240,10 +247,10 @@
             }
 
             function handleAnswer(selectedOption) {
-                const questionIndex = Math.floor(gameState.turnIndex / 2);
                 const currentPlayer = gameState.players[gameState.turnIndex % 2];
+                const personalizedQuestionText = document.getElementById('question-text').textContent;
                 
-                currentPlayer.answers.push({ question: QUESTIONS[questionIndex].q, answer: selectedOption });
+                currentPlayer.answers.push({ question: personalizedQuestionText, answer: selectedOption });
                 moveToNext();
             }
             
@@ -260,13 +267,13 @@
                 loadingText.textContent = "الذكاء الاصطناعي بيحلل علاقتكم...";
                 loadingOverlay.classList.remove('hidden');
                 
-                const player1 = gameState.players[0];
-                const player2 = gameState.players[1];
+                const player1 = gameState.players[0]; // الشاب
+                const player2 = gameState.players[1]; // البنت
 
                 const p1Answers = player1.answers.map(item => `الموقف: ${item.question}\nرد فعله: ${item.answer}`).join('\n\n');
                 const p2Answers = player2.answers.map(item => `الموقف: ${item.question}\nرد فعلها: ${item.answer}`).join('\n\n');
 
-                const prompt = `أنت مستشار علاقات عاطفية خبير وبتتكلم بالعامية المصرية. قدامك ردود أفعال اتنين مرتبطين، "${player1.name}" و "${player2.name}"، على مجموعة مواقف.\n\nردود أفعال ${player1.name}:\n${p1Answers}\n\nردود أفعال ${player2.name}:\n${p2Answers}\n\nبناءً على ردود أفعالهم دي، اكتب تحليل شامل ومفصل لعلاقتهم. التحليل لازم يكون بنّاء وإيجابي ويهدف لمساعدتهم يفهموا بعض أكتر. قسم التحليل للآتي:\n1. **نقاط القوة في علاقتكم:** (3 نقاط على الأقل) حاجات جميلة وواضحة في طريقة تعاملكم مع المواقف زي التفاهم، التكامل، أو الدعم.\n2. **نقاط ممكن تشتغلوا عليها:** (نقطتين أو ثلاثة) اختلافات بسيطة في ردود الأفعال ممكن تكون فرصة للتطور، وقدم نصيحة بسيطة وعملية لكل نقطة عشان تقووا علاقتهم أكتر.\n3. **ملخص علاقتكم:** فقرة أخيرة بتلخص طبيعة الرابط اللي بينكم بناءً على طريقة تصرفكم في المواقف دي بطريقة دافية ومُطمئنة.\n\nخلي كلامك ودود وواضح كأنك بتتكلم معاهم مباشرة.`;
+                const prompt = `أنت مستشار علاقات عاطفية خبير وبتتكلم بالعامية المصرية. قدامك ردود أفعال اتنين مرتبطين، الشاب "${player1.name}" والبنت "${player2.name}"، على مجموعة مواقف.\n\nردود أفعال ${player1.name}:\n${p1Answers}\n\nردود أفعال ${player2.name}:\n${p2Answers}\n\nبناءً على ردود أفعالهم دي، اكتب تحليل شامل ومفصل لعلاقتهم. التحليل لازم يكون بنّاء وإيجابي ويهدف لمساعدتهم يفهموا بعض أكتر. قسم التحليل للآتي:\n1. **نقاط القوة في علاقتكم:** (3 نقاط على الأقل) حاجات جميلة وواضحة في طريقة تعاملكم مع المواقف زي التفاهم، التكامل، أو الدعم.\n2. **نقاط ممكن تشتغلوا عليها:** (نقطتين أو ثلاثة) اختلافات بسيطة في ردود الأفعال ممكن تكون فرصة للتطور، وقدم نصيحة بسيطة وعملية لكل نقطة عشان تقووا علاقتهم أكتر.\n3. **ملخص علاقتكم:** فقرة أخيرة بتلخص طبيعة الرابط اللي بينكم بناءً على طريقة تصرفكم في المواقف دي بطريقة دافية ومُطمئنة.\n\nخلي كلامك ودود وواضح كأنك بتتكلم معاهم مباشرة.`;
 
                 const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
                 
@@ -335,7 +342,7 @@
                 loadingOverlay.classList.remove('hidden');
                 
                 const receiverAnswers = receiver.answers.map(item => `الموقف: ${item.question}\nرد فعلها: ${item.answer}`).join('\n\n');
-                const prompt = `أنت "${complimenter.name}" وعايز تقول كلمة حلوة لشريكتك "${receiver.name}". بناءً على ردود أفعالها في المواقف دي، اكتب مجاملة قصيرة وصادقة من القلب ليها بالعامية المصرية. خلي الكلام يعبر عن حاجة مميزة في شخصيتها عجبتك من طريقة تصرفها.\n\nإجابات ${receiver.name}:\n${receiverAnswers}`;
+                const prompt = `أنت "${complimenter.name}" وعايز تقول كلمة حلوة لـ "${receiver.name}". بناءً على ردود أفعالها في المواقف دي، اكتب مجاملة قصيرة وصادقة من القلب ليها بالعامية المصرية. خلي الكلام يعبر عن حاجة مميزة في شخصيتها عجبتك من طريقة تصرفها.\n\nإجابات ${receiver.name}:\n${receiverAnswers}`;
                 const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
 
                 try {
