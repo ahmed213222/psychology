@@ -196,7 +196,9 @@
                 };
 
                 try {
-                    const apiKey = ""; // Left empty
+                    // --- EDIT HERE: PASTE YOUR API KEY ---
+                    // --- قم بالتعديل هنا: الصق مفتاح الـ API الخاص بك ---
+                    const apiKey = "AIzaSyARMAvjPVNEuGezl2_04KXLVoX3V9Iz2x8"; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     if (!response.ok) return false;
@@ -299,7 +301,9 @@
                 const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
 
                 try {
-                    const apiKey = ""; // Left empty
+                    // --- EDIT HERE: PASTE YOUR API KEY ---
+                    // --- قم بالتعديل هنا: الصق مفتاح الـ API الخاص بك ---
+                    const apiKey = "YOUR_API_KEY_HERE"; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     let analysisText = "حصلت مشكلة في التحليل.";
